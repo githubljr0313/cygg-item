@@ -1,0 +1,61 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <property name="now" value="now()" dbms="mysql,h2"/>
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="now" value="sysdate" dbms="oracle"/>
+
+    <property name="autoIncrement" value="true" dbms="mysql,h2,postgresql,oracle"/>
+
+    <property name="floatType" value="float4" dbms="postgresql, h2"/>
+    <property name="floatType" value="float" dbms="mysql, oracle"/>
+
+    <changeSet id="20211101-create-demo-table" author="ouzp">
+        <createTable tableName="demo" remarks="demo表">
+            <column name="id" type="bigint" autoIncrement="${autoIncrement}" remarks="主键id">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="add_time" type="timestamp" remarks="添加时间" defaultValue="${now}">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <comment>创建demo表</comment>
+    </changeSet>
+
+    <changeSet id="20211101-alter-demo-add-country" author="ouzp">
+        <addColumn tableName="demo">
+            <column name="country" type="VARCHAR(2)" remarks="国家">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <!-- "create table","rename column"和"add column"都可以自动创建回滚语句. -->
+        <!-- "drop table"和"insert data"没有相应的可以自动生成的回滚命令. -->
+        <rollback>
+            <dropColumn tableName="demo" columnName="country"/>
+        </rollback>
+        <comment>修改demo表</comment>
+    </changeSet>
+
+    <changeSet id="20211101-alter-demo-sql-update" author="ouzp">
+        <sql>alter table demo add name varchar(20) not null comment '姓名'</sql>
+        <addColumn tableName="demo">
+            <column name="deleted" type="boolean" remarks="删除标志位" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <comment>SQL修改demo表</comment>
+    </changeSet>
+
+    <changeSet id="20211101-load-demo-data" author="ouzp">
+        <loadData
+                file="liquibase/data/demo.csv"
+                separator=";"
+                tableName="demo">
+            <column name="deleted" type="boolean"/>
+            <column name="add_time" type="timestamp"/>
+        </loadData>
+        <comment>20211101导入demo表数据</comment>
+    </changeSet>
+</databaseChangeLog>

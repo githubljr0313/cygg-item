@@ -1,0 +1,26 @@
+services:
+  db:
+    image: mysql:8-oracle       #指定镜像:版本
+    container_name: mysqlDB8_1  #容器名
+    command:
+      - --default_authentication_plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:  # 挂载文件配置
+      - ~/docker/mysqlVolume/data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: always # 容器总是重新启动。
+    environment: # 环境变量
+      MYSQL_DATABASE: cygg    #mysql启动后会默认创建一个docker的database
+      MYSQL_ROOT_PASSWORD: mysqlljr0313   #root的密码
+      MYSQL_ROOT_HOST: '%'    #代表任何机器都可以连接当前数据库
+
+  cygg-item-app:
+    depends_on:
+      - db
+    build: .  # 指定Dockerfile文件路径
+    image: cygg-item-app:1.0.0-snapshot # 指定构造完后的镜像名称
+    container_name: cygg-item-app # 指定容器名称
+    ports:
+      - "8081:8081"
